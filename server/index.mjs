@@ -33,19 +33,22 @@ const app = express()
 app.use('/api/examples/*', (req, res, next) => {
   const filename = req.params[0]
   req.url = filename
-  express.static(path.join(__dirname, '..', 'Projects'))(req, res, next)
+  // the nix setup has the files in ~/deploy/live
+  express.static(path.join(os.homedir(), 'deploy', 'live'))(req, res, next)
 })
 // `*` is the project like `mathlib-demo`
 app.use('/api/manifest/*', (req, res, next) => {
   const project = req.params[0]
   req.url = 'lake-manifest.json'
-  express.static(path.join(__dirname, '..', 'Projects', project))(req, res, next)
+  // the nix setup has the files in ~/deploy/live
+  express.static(path.join(os.homedir(), 'deploy', 'live', project))(req, res, next)
 })
 // `*` is the project like `mathlib-demo`
 app.use('/api/toolchain/*', (req, res, next) => {
   const project = req.params[0]
   req.url = 'lean-toolchain'
-  express.static(path.join(__dirname, '..', 'Projects', project))(req, res, next)
+  // the nix setup has the files in ~/deploy/live
+  express.static(path.join(os.homedir(), 'deploy', 'live', project))(req, res, next)
 })
 // Using the client files
 app.use(express.static(path.join(__dirname, '..', 'client', 'dist')))
@@ -81,8 +84,13 @@ function startServerProcess(project) {
     console.warn("Running without Bubblewrap container!")
     serverProcess = cp.spawn("lean", ["--server"], { cwd: projectPath })
   } else {
-    console.info("Running with Bubblewrap container.")
-    serverProcess = cp.spawn("./bubblewrap.sh", [projectPath], { cwd: __dirname })
+    // the nix setup runs the server in ~,
+    // `bubblewrap.sh` is somewhere relative to the js source file
+    // and the projects are in ~/deploy/live/<project>
+    let cmd = path.join (__dirname, "bubblewrap.sh");
+    let cmdArgs = [path.join("deploy","live",project)];
+    console.info(`Running with Bubblewrap container: ${cmd} ${cmdArgs}.`)
+    serverProcess = cp.spawn(cmd, cmdArgs, {})
   }
 
   // serverProcess.stdout.on('data', (data) => {

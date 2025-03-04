@@ -6,6 +6,7 @@
   "bin": {
     "server": "server/index.mjs"
   },
+  "files": ["client/dist", "server"],
   "scripts": {
     "start": "concurrently -n server,client -c blue,green \"npm run start_server\" \"npm run start_client\"",
     "start_server": "cd server && NODE_ENV=development nodemon ./index.mjs",
@@ -36,7 +37,6 @@
     "lz-string": "^1.5.0",
     "memfs": "^4.11.1",
     "nocache": "^4.0.0",
-    "node": "^22.6.0",
     "nodemon": "^3.1.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
